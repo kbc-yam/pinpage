@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER UNIT — セキュアアクセス</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #030a0e;
+      color: #00ffe7;
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* スキャンライン背景 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 231, 0.03) 0px,
+        rgba(0, 255, 231, 0.03) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* グリッドライン */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,231,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,231,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      width: 420px;
+    }
+
+    /* コーナー装飾 */
+    .panel {
+      position: relative;
+      background: rgba(0, 20, 30, 0.85);
+      border: 1px solid rgba(0, 255, 231, 0.3);
+      padding: 50px 40px;
+      backdrop-filter: blur(8px);
+      box-shadow:
+        0 0 40px rgba(0, 255, 231, 0.08),
+        inset 0 0 60px rgba(0, 255, 231, 0.02);
+    }
+
+    .panel::before,
+    .panel::after,
+    .corner-bl,
+    .corner-tr {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+    }
+
+    .panel::before {
+      top: -1px; left: -1px;
+      border-top: 2px solid #00ffe7;
+      border-left: 2px solid #00ffe7;
+    }
+
+    .panel::after {
+      bottom: -1px; right: -1px;
+      border-bottom: 2px solid #00ffe7;
+      border-right: 2px solid #00ffe7;
+    }
+
+    .corner-bl {
+      bottom: -1px; left: -1px;
+      border-bottom: 2px solid #00ffe7;
+      border-left: 2px solid #00ffe7;
+    }
+
+    .corner-tr {
+      top: -1px; right: -1px;
+      border-top: 2px solid #00ffe7;
+      border-right: 2px solid #00ffe7;
+    }
+
+    .org-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 2rem;
+      letter-spacing: 0.3em;
+      color: #00ffe7;
+      text-shadow:
+        0 0 10px rgba(0,255,231,0.8),
+        0 0 30px rgba(0,255,231,0.4),
+        0 0 60px rgba(0,255,231,0.2);
+      margin-bottom: 6px;
+    }
+
+    .org-sub {
+      font-size: 0.65rem;
+      letter-spacing: 0.5em;
+      color: rgba(0,255,231,0.5);
+      margin-bottom: 36px;
+      text-transform: uppercase;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,255,231,0.5), transparent);
+      margin-bottom: 36px;
+    }
+
+    .access-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      color: rgba(0,255,231,0.6);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    /* ドットインジケーター */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .dot {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,255,231,0.4);
+      border-radius: 50%;
+      transition: all 0.1s ease;
+    }
+
+    .dot.filled {
+      background: #00ffe7;
+      border-color: #00ffe7;
+      box-shadow: 0 0 10px rgba(0,255,231,0.8);
+    }
+
+    /* 非表示の実際の入力欄 */
+    #pin-input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    /* クリック可能な入力エリア */
+    .pin-display {
+      cursor: text;
+      padding: 14px 24px;
+      border: 1px solid rgba(0,255,231,0.3);
+      background: rgba(0,255,231,0.04);
+      letter-spacing: 0.6em;
+      font-size: 1.6rem;
+      color: #00ffe7;
+      margin-bottom: 12px;
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+
+    .pin-display:focus-within,
+    .pin-display.focused {
+      border-color: rgba(0,255,231,0.8);
+      box-shadow: 0 0 20px rgba(0,255,231,0.15);
+      outline: none;
+    }
+
+    .pin-display .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.4rem;
+      background: #00ffe7;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .hint {
+      font-size: 0.65rem;
+      color: rgba(0,255,231,0.35);
+      letter-spacing: 0.2em;
+      margin-bottom: 6px;
+    }
+
+    .error-msg {
+      font-size: 0.8rem;
+      color: #ff3b5c;
+      letter-spacing: 0.15em;
+      min-height: 1.2em;
+      text-shadow: 0 0 8px rgba(255,59,92,0.6);
+      margin-top: 16px;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-8px); }
+      50%  { transform: translateX(8px); }
+      75%  { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
+    }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      margin-top: 14px;
+      padding: 12px 0;
+      background: transparent;
+      border: 1px solid rgba(0,255,231,0.5);
+      color: #00ffe7;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .submit-btn:hover,
+    .submit-btn:focus {
+      background: rgba(0,255,231,0.08);
+      border-color: #00ffe7;
+      box-shadow: 0 0 16px rgba(0,255,231,0.2);
+      outline: none;
+    }
+
+    .submit-btn:active {
+      background: rgba(0,255,231,0.18);
+    }
+
+    .footer-info {
+      margin-top: 36px;
+      font-size: 0.6rem;
+      color: rgba(0,255,231,0.2);
+      letter-spacing: 0.25em;
+    }
+
+    /* 点滅するステータスライト */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 0.6rem;
+      color: rgba(0,255,231,0.3);
+      letter-spacing: 0.2em;
+    }
+
+    .status-light {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 8px rgba(0,255,136,0.8);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* 成功フラッシュ */
+    .success-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,255,231,0.15);
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    /* タイマー */
+    #timer-wrap {
+      display: none;
+      margin-bottom: 14px;
+    }
+
+    .timer-label {
+      margin-bottom: 8px;
+      transition: color 0.4s;
+    }
+
+    .timer-countdown {
+      font-family: 'Orbitron', 'Share Tech Mono', monospace;
+      font-weight: 700;
+      font-size: 2.4rem;
+      letter-spacing: 0.05em;
+      color: #ff3b5c;
+      text-shadow: 0 0 16px rgba(255,59,92,0.7);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-countdown .timer-ms {
+      font-size: 1.4rem;
+      opacity: 0.85;
+    }
+
+    .timer-unit {
+      display: block;
+      font-size: 0.6rem;
+      letter-spacing: 0.45em;
+      color: rgba(255,59,92,0.5);
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .timer-label.urgent .timer-countdown {
+      text-shadow: 0 0 24px rgba(255,59,92,1), 0 0 48px rgba(255,59,92,0.5);
+      animation: timerPulse 0.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes timerPulse {
+      from { opacity: 1; }
+      to   { opacity: 0.6; }
+    }
+
+    .timer-track {
+      width: 100%;
+      height: 2px;
+      background: rgba(0,255,231,0.12);
+      overflow: hidden;
+    }
+
+    #timer-bar {
+      height: 100%;
+      width: 100%;
+      background: #ff3b5c;
+      box-shadow: 0 0 6px rgba(255,59,92,0.6);
+      transition: width 1s linear;
+    }
+
+    /* ロックダウンオーバーレイ */
+    #lockdown-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(8, 0, 0, 0.96);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+    }
+
+    #lockdown-overlay.active {
+      display: flex;
+      animation: overlayIn 0.25s ease;
+    }
+
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* 赤スキャンライン（ロック時） */
+    #lockdown-overlay::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 59, 92, 0.05) 0px,
+        rgba(255, 59, 92, 0.05) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      pointer-events: none;
+    }
+
+    .lockdown-icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      animation: iconBlink 0.6s step-end infinite;
+    }
+
+    @keyframes iconBlink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .lockdown-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      letter-spacing: 0.15em;
+      color: #ff3b5c;
+      text-shadow:
+        0 0 20px rgba(255,59,92,1),
+        0 0 50px rgba(255,59,92,0.6),
+        0 0 100px rgba(255,59,92,0.3);
+      margin-bottom: 12px;
+      animation: titleFlicker 4s step-end infinite;
+    }
+
+    @keyframes titleFlicker {
+      0%, 92%, 94%, 96%, 100% { opacity: 1; }
+      93%, 95% { opacity: 0.5; }
+    }
+
+    .lockdown-sub {
+      font-size: 0.75rem;
+      letter-spacing: 0.45em;
+      color: rgba(255,59,92,0.65);
+      margin-bottom: 36px;
+      text-transform: uppercase;
+    }
+
+    .lockdown-divider {
+      width: 240px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,59,92,0.6), transparent);
+      margin-bottom: 32px;
+    }
+
+    .lockdown-detail {
+      font-size: 0.75rem;
+      color: rgba(255,59,92,0.5);
+      letter-spacing: 0.25em;
+      line-height: 2.2;
+    }
+
+    .lockdown-detail .alert-line {
+      color: rgba(255,59,92,0.8);
+    }
+
+    .lockdown-detail .blink {
+      animation: blink 1.2s step-end infinite;
+      color: #ff3b5c;
+    }
+
+    /* 成功オーバーレイ */
+    #success-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 10, 15, 0.97);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+    }
+
+    #success-overlay.active {
+      display: flex;
+      animation: overlayIn 0.3s ease;
+    }
+
+    .success-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      letter-spacing: 0.25em;
+      color: #00ffe7;
+      text-shadow:
+        0 0 20px rgba(0,255,231,1),
+        0 0 50px rgba(0,255,231,0.6),
+        0 0 100px rgba(0,255,231,0.3);
+      margin-bottom: 16px;
+    }
+
+    .success-pin-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.5em;
+      color: rgba(0,255,231,0.55);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    .success-pin-value {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(4rem, 15vw, 7rem);
+      letter-spacing: 0.3em;
+      color: #00ffe7;
+      text-shadow:
+        0 0 30px rgba(0,255,231,1),
+        0 0 80px rgba(0,255,231,0.7),
+        0 0 150px rgba(0,255,231,0.4);
+      line-height: 1;
+      margin-bottom: 32px;
+    }
+
+    .success-divider {
+      width: 240px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,255,231,0.6), transparent);
+      margin-bottom: 24px;
+    }
+
+    .success-countdown {
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      color: rgba(0,255,231,0.5);
+      text-transform: uppercase;
+    }
+
+    .success-countdown span {
+      color: #00ffe7;
+      font-weight: bold;
+    }
+
+    /* 画面シェイク */
+    @keyframes screenShake {
+      0%   { transform: translate(0, 0); }
+      10%  { transform: translate(-6px, -3px); }
+      20%  { transform: translate(6px, 3px); }
+      30%  { transform: translate(-8px, 2px); }
+      40%  { transform: translate(8px, -2px); }
+      50%  { transform: translate(-4px, 4px); }
+      60%  { transform: translate(4px, -4px); }
+      70%  { transform: translate(-3px, 2px); }
+      80%  { transform: translate(3px, -2px); }
+      90%  { transform: translate(-1px, 1px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    body.shaking {
+      animation: screenShake 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+
+<div class="success-flash" id="flash"></div>
+
+<!-- ロックダウンオーバーレイ -->
+<!-- 成功オーバーレイ -->
+<div id="success-overlay">
+  <div class="success-title">ACCESS GRANTED</div>
+  <div class="success-pin-label">暗証番号</div>
+  <div class="success-pin-value" id="success-pin-display">----</div>
+  <div class="success-divider"></div>
+  <div class="success-countdown">システムに接続中… <span id="success-sec">3</span> 秒後に遷移します</div>
+</div>
+
+<div id="lockdown-overlay">
+  <div class="lockdown-icon">&#9888;</div>
+  <div class="lockdown-title">SYSTEM LOCKDOWN</div>
+  <div class="lockdown-sub">Unauthorized Access Detected</div>
+  <div class="lockdown-divider"></div>
+  <div class="lockdown-detail">
+    <div class="alert-line">異常アクセスが検出されました。</div>
+    <div>このセッションは強制終了されました。</div>
+    <div>&nbsp;</div>
+    <div>INCIDENT ID: <span id="incident-id">--</span></div>
+    <div>TIMESTAMP: <span id="incident-time">--</span></div>
+    <div>&nbsp;</div>
+    <div class="blink">&#9654; セキュリティチームへの通知が完了しました</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="panel">
+    <div class="corner-bl"></div>
+    <div class="corner-tr"></div>
+
+    <div class="status-bar">
+      <div class="status-light"></div>
+      <span>SECURE LINE ACTIVE</span>
+    </div>
+
+    <div class="org-logo">CIPHER UNIT</div>
+    <div class="org-sub">Classified Access Terminal</div>
+    <div class="divider"></div>
+
+    <div class="access-label">ENTER ACCESS CODE</div>
+
+    <div class="dots">
+      <div class="dot" id="d0"></div>
+      <div class="dot" id="d1"></div>
+      <div class="dot" id="d2"></div>
+      <div class="dot" id="d3"></div>
+    </div>
+
+    <input
+      id="pin-input"
+      type="tel"
+      inputmode="numeric"
+      maxlength="4"
+      autocomplete="off"
+    >
+
+    <div class="pin-display focused" id="pin-display" onclick="focusInput()">
+      <span id="pin-mask"></span>
+      <span class="cursor"></span>
+    </div>
+
+    <div class="hint">[ 4桁の暗証番号を入力してください ]</div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitPin()">SUBMIT</button>
+
+    <div id="timer-wrap">
+      <div class="timer-label" id="timer-label">
+        <div class="timer-countdown">
+          <span id="timer-text">30</span>.<span class="timer-ms" id="timer-ms">0</span>
+        </div>
+        <span class="timer-unit">seconds remaining</span>
+      </div>
+      <div class="timer-track"><div id="timer-bar"></div></div>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="footer-info">
+      ▸ CIPHER UNIT SECURE TERMINAL v4.2 &nbsp;|&nbsp; SESSION ENCRYPTED
+    </div>
+  </div>
+</div>
+
+<script>
+  const CORRECT_PIN = String(501 + Math.floor(Math.random() * 5)).padStart(4, '0');
+  const TIMEOUT_SEC = 30;
+  const input = document.getElementById('pin-input');
+  const pinMask = document.getElementById('pin-mask');
+  const errorMsg = document.getElementById('error-msg');
+  const flash = document.getElementById('flash');
+  const timerWrap = document.getElementById('timer-wrap');
+  const timerLabel = document.getElementById('timer-label');
+  const timerText = document.getElementById('timer-text');
+  const timerMs  = document.getElementById('timer-ms');
+  const timerBar = document.getElementById('timer-bar');
+  const dots = [
+    document.getElementById('d0'),
+    document.getElementById('d1'),
+    document.getElementById('d2'),
+    document.getElementById('d3'),
+  ];
+
+  let currentPin = '';
+  let timerStarted = false;
+  let locked = false;
+  let rafId = null;
+
+  // ページ読み込み時に入力欄にフォーカス
+  window.addEventListener('load', () => {
+    focusInput();
+  });
+
+  function focusInput() {
+    input.focus();
+  }
+
+  function startTimer() {
+    if (timerStarted) return;
+    timerStarted = true;
+    timerWrap.style.display = 'block';
+    const totalMs = TIMEOUT_SEC * 1000;
+    const startTime = performance.now();
+
+    function tick(now) {
+      const remaining = Math.max(0, totalMs - (now - startTime));
+      // 0.1秒単位表示
+      const secs   = Math.floor(remaining / 1000);
+      const tenth  = Math.floor((remaining % 1000) / 100); // 0−9
+
+      timerText.textContent = String(secs).padStart(2, '0');
+      timerMs.textContent   = String(tenth);
+      timerBar.style.width  = (remaining / totalMs * 100) + '%';
+
+      if (remaining <= 10000) {
+        timerLabel.classList.add('urgent');
+      }
+
+      if (remaining <= 0) {
+        lockInput();
+        return;
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function lockInput() {
+    locked = true;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    currentPin = '';
+    input.value = '';
+    updateDisplay();
+    const cursor = document.querySelector('.cursor');
+    if (cursor) { cursor.style.animation = 'none'; cursor.style.opacity = '0'; }
+
+    // 画面シェイク
+    document.body.classList.add('shaking');
+    setTimeout(() => document.body.classList.remove('shaking'), 500);
+
+    // 赤フラッシュを3回繰り返す
+    let flashCount = 0;
+    const redFlash = document.createElement('div');
+    redFlash.style.cssText = 'position:fixed;inset:0;background:rgba(255,59,92,0.35);z-index:150;pointer-events:none;transition:opacity 0.1s;';
+    document.body.appendChild(redFlash);
+
+    const flashInterval = setInterval(() => {
+      redFlash.style.opacity = flashCount % 2 === 0 ? '0' : '1';
+      flashCount++;
+      if (flashCount >= 6) {
+        clearInterval(flashInterval);
+        redFlash.remove();
+        // オーバーレイ表示
+        const overlay = document.getElementById('lockdown-overlay');
+        document.getElementById('incident-id').textContent =
+          Math.random().toString(36).substring(2,8).toUpperCase() + '-' +
+          Math.floor(Math.random() * 9000 + 1000);
+        document.getElementById('incident-time').textContent =
+          new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+        overlay.classList.add('active');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 30000);
+      }
+    }, 120);
+  }
+
+  // モバイル対応: input イベントで入力値を currentPin に同期
+  input.addEventListener('input', () => {
+    if (locked) { input.value = ''; return; }
+    const digits = input.value.replace(/\D/g, '').slice(0, 4);
+    input.value = digits;
+    currentPin = digits;
+    updateDisplay();
+  });
+
+  // キー入力ハンドラ（デスクトップ用: Enter のみ。数字/Backspace は input イベントで処理）
+  document.addEventListener('keydown', (e) => {
+    if (locked) return;
+    if (e.key === 'Enter') {
+      submitPin();
+    }
+  });
+
+  function updateDisplay() {
+    // マスク表示
+    pinMask.textContent = '●'.repeat(currentPin.length);
+
+    // ドット更新
+    for (let i = 0; i < 4; i++) {
+      if (i < currentPin.length) {
+        dots[i].classList.add('filled');
+      } else {
+        dots[i].classList.remove('filled');
+      }
+    }
+
+    // エラーメッセージをクリア（新たに入力開始したとき）
+    if (currentPin.length > 0) {
+      errorMsg.style.animation = 'none';
+      errorMsg.textContent = '';
+    }
+  }
+
+  function submitPin() {
+    if (currentPin.length === 0) return;
+
+    if (currentPin === CORRECT_PIN) {
+      // 成功
+      flash.style.opacity = '1';
+      setTimeout(() => { flash.style.opacity = '0'; }, 150);
+
+      // 成功オーバーレイを表示
+      document.getElementById('success-pin-display').textContent = CORRECT_PIN;
+      document.getElementById('success-overlay').classList.add('active');
+
+      // カウントダウン表示
+      let sec = 3;
+      const secEl = document.getElementById('success-sec');
+      const countInterval = setInterval(() => {
+        sec--;
+        secEl.textContent = sec;
+        if (sec <= 0) {
+          clearInterval(countInterval);
+          window.location.href = 'top.html';
+        }
+      }, 1000);
+    } else {
+      // 失敗 — 初回失敗時にタイマースタート
+      startTimer();
+      errorMsg.style.color = '#ff3b5c';
+      errorMsg.style.animation = 'none';
+      void errorMsg.offsetWidth; // reflow でアニメーションリセット
+      errorMsg.style.animation = 'shake 0.3s ease';
+      errorMsg.textContent = '暗証番号が違います';
+
+      // 入力クリア
+      currentPin = '';
+      input.value = '';
+      updateDisplay();
+    }
+  }
+</script>
+</body>
+</html>

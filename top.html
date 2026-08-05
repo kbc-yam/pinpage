@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER UNIT — Command HQ</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --cyan: #00ffe7;
+      --dark: #030a0e;
+      --mid: #071520;
+      --accent: #ff3b5c;
+      --green: #00ff88;
+    }
+
+    body {
+      background-color: var(--dark);
+      color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* スキャンライン */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0,255,231,0.025) 0px,
+        rgba(0,255,231,0.025) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ======== HEADER ======== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(3,10,14,0.92);
+      border-bottom: 1px solid rgba(0,255,231,0.2);
+      backdrop-filter: blur(10px);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .header-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.3rem;
+      letter-spacing: 0.3em;
+      color: var(--cyan);
+      text-shadow: 0 0 20px rgba(0,255,231,0.6);
+    }
+
+    nav {
+      display: flex;
+      gap: 32px;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+    }
+
+    nav a {
+      color: rgba(0,255,231,0.5);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--cyan);
+      text-shadow: 0 0 10px rgba(0,255,231,0.6);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.65rem;
+      color: rgba(0,255,231,0.4);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(0,255,136,0.8);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* ======== HERO ======== */
+    .hero {
+      position: relative;
+      padding: 80px 40px 60px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* 放射グロー背景 */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0,255,231,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.6em;
+      color: rgba(0,255,231,0.4);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      letter-spacing: 0.15em;
+      line-height: 1.1;
+      color: var(--cyan);
+      text-shadow:
+        0 0 20px rgba(0,255,231,0.6),
+        0 0 60px rgba(0,255,231,0.3),
+        0 0 120px rgba(0,255,231,0.1);
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 0.9rem;
+      letter-spacing: 0.4em;
+      color: rgba(0,255,231,0.5);
+      margin-bottom: 40px;
+      text-transform: uppercase;
+    }
+
+    .hero-divider {
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      margin: 0 auto 40px;
+    }
+
+    .hero-desc {
+      max-width: 620px;
+      margin: 0 auto 48px;
+      font-size: 0.85rem;
+      line-height: 1.9;
+      color: rgba(0,255,231,0.55);
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 40px;
+      border: 1px solid var(--cyan);
+      color: var(--dark);
+      background: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px rgba(0,255,231,0.3);
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--cyan);
+      box-shadow: 0 0 40px rgba(0,255,231,0.4);
+    }
+
+    /* ======== STATS BAR ======== */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      border-top: 1px solid rgba(0,255,231,0.15);
+      border-bottom: 1px solid rgba(0,255,231,0.15);
+      background: rgba(0,255,231,0.02);
+    }
+
+    .stat-item {
+      flex: 1;
+      max-width: 200px;
+      padding: 24px 20px;
+      text-align: center;
+      border-right: 1px solid rgba(0,255,231,0.1);
+    }
+
+    .stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-num {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: var(--cyan);
+      text-shadow: 0 0 15px rgba(0,255,231,0.5);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.35em;
+      color: rgba(0,255,231,0.35);
+      text-transform: uppercase;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* ======== MAIN CONTENT ======== */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.5em;
+      color: rgba(0,255,231,0.5);
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .section-title::before {
+      content: '';
+      flex: 0 0 32px;
+      height: 1px;
+      background: rgba(0,255,231,0.4);
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(0,255,231,0.3), transparent);
+    }
+
+    /* ミッションカード */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+
+    .card {
+      position: relative;
+      background: rgba(0,20,30,0.7);
+      border: 1px solid rgba(0,255,231,0.15);
+      padding: 28px 24px;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent, var(--cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .card:hover {
+      border-color: rgba(0,255,231,0.4);
+      box-shadow: 0 0 30px rgba(0,255,231,0.07);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--cyan);
+      margin-bottom: 10px;
+    }
+
+    .card-status {
+      display: inline-block;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      padding: 3px 10px;
+      margin-bottom: 12px;
+      border: 1px solid;
+    }
+
+    .card-status.active {
+      color: var(--green);
+      border-color: var(--green);
+      background: rgba(0,255,136,0.05);
+    }
+
+    .card-status.standby {
+      color: #ffb800;
+      border-color: #ffb800;
+      background: rgba(255,184,0,0.05);
+    }
+
+    .card-status.critical {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(255,59,92,0.05);
+    }
+
+    .card-desc {
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: rgba(0,255,231,0.45);
+    }
+
+    /* ライブフィード */
+    .feed {
+      background: rgba(0,10,16,0.8);
+      border: 1px solid rgba(0,255,231,0.15);
+      padding: 24px;
+      font-size: 0.75rem;
+      line-height: 2;
+      max-height: 200px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 60px;
+    }
+
+    .feed::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(transparent, rgba(3,10,14,0.9));
+    }
+
+    .feed-line {
+      color: rgba(0,255,231,0.45);
+    }
+
+    .feed-line .time {
+      color: rgba(0,255,231,0.25);
+    }
+
+    .feed-line .highlight {
+      color: var(--green);
+    }
+
+    .feed-line .warn {
+      color: #ffb800;
+    }
+
+    /* ======== FOOTER ======== */
+    footer {
+      border-top: 1px solid rgba(0,255,231,0.12);
+      padding: 28px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.6rem;
+      color: rgba(0,255,231,0.25);
+      letter-spacing: 0.3em;
+    }
+
+    /* フェードイン */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero, .stats-bar, main, footer {
+      animation: fadeInUp 0.6s ease both;
+    }
+
+    .stats-bar { animation-delay: 0.15s; }
+    main       { animation-delay: 0.25s; }
+    footer     { animation-delay: 0.35s; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-logo">CIPHER UNIT</div>
+  <nav>
+    <a href="#">COMMAND</a>
+    <a href="#">INTEL</a>
+    <a href="#">ASSETS</a>
+    <a href="#">COMMS</a>
+    <a href="index.html">LOG OUT</a>
+  </nav>
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <span>OPERATOR AUTHENTICATED</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-tag">&#9651; EYES ONLY — CLEARED FOR ACCESS &#9651;</p>
+  <h1 class="hero-title">COMMAND HQ</h1>
+  <p class="hero-subtitle">Global Operations Intelligence Network</p>
+  <div class="hero-divider"></div>
+  <p class="hero-desc">
+    ようこそ、CIPHER UNIT 統合司令部へ。<br>
+    当システムは世界各地の工作員との通信、ミッション管理、
+    および情報資産の一元管理を担う最高機密インフラです。<br>
+    すべての操作はログに記録され、監視下に置かれます。
+  </p>
+  <a href="#" class="btn-primary">ENTER OPERATIONS CENTER</a>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">047</span>
+    <span class="stat-label">Active Agents</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">12</span>
+    <span class="stat-label">Live Missions</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">99.9%</span>
+    <span class="stat-label">Uptime</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">6</span>
+    <span class="stat-label">Threat Alerts</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">128</span>
+    <span class="stat-label">Encrypted Channels</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <div class="section-title">ACTIVE MISSIONS</div>
+  <div class="cards">
+    <div class="card">
+      <span class="card-icon">🌐</span>
+      <div class="card-title">OPERATION NIGHTFALL</div>
+      <span class="card-status active">ACTIVE</span>
+      <p class="card-desc">東欧における情報収集任務。エージェント Bravo-7 が現地に潜入中。通信は毎日00:00 UTC に実施。</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🛰️</span>
+      <div class="card-title">OPERATION GHOST SIGNAL</div>
+      <span class="card-status standby">STANDBY</span>
+      <p class="card-desc">衛星通信傍受プロジェクト。標的の暗号解析が完了次第、第二フェーズへ移行予定。</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">⚡</span>
+      <div class="card-title">OPERATION RED LOTUS</div>
+      <span class="card-status critical">CRITICAL</span>
+      <p class="card-desc">南アジア拠点の不審組織を追跡中。現地エージェントからの最終報告が48時間以上途絶。</p>
+    </div>
+  </div>
+
+  <div class="section-title">SYSTEM INTEL FEED</div>
+  <div class="feed">
+    <div class="feed-line"><span class="time">[04:12:07]</span> &nbsp;<span class="highlight">● AGENT DELTA-3</span> — セキュアチャネル接続確認。位置情報更新。</div>
+    <div class="feed-line"><span class="time">[03:58:44]</span> &nbsp;<span class="warn">▲ ANOMALY DETECTED</span> — セクター7にて未認証アクセス試行。遮断済み。</div>
+    <div class="feed-line"><span class="time">[03:45:21]</span> &nbsp;衛星 APEX-9 からのデータパケット受信完了。解析開始。</div>
+    <div class="feed-line"><span class="time">[03:30:05]</span> &nbsp;<span class="highlight">● MISSION NIGHTFALL</span> — チェックポイント Alpha 通過確認。</div>
+    <div class="feed-line"><span class="time">[03:14:59]</span> &nbsp;暗号鍵ローテーション完了。全チャネル更新済み。</div>
+    <div class="feed-line"><span class="time">[02:47:33]</span> &nbsp;<span class="warn">▲ SIGNAL LOST</span> — OPERATION RED LOTUS エージェントとの通信断絶。調査中。</div>
+  </div>
+
+  <div class="section-title">INTELLIGENCE ASSETS</div>
+  <div class="cards">
+    <div class="card">
+      <span class="card-icon">🔐</span>
+      <div class="card-title">CRYPTO VAULT</div>
+      <span class="card-status active">ONLINE</span>
+      <p class="card-desc">AES-512 暗号化された機密文書アーカイブ。現在 2,847 件の機密ファイルを保管。</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">📡</span>
+      <div class="card-title">SIGNAL INTERCEPT</div>
+      <span class="card-status active">ONLINE</span>
+      <p class="card-desc">世界18都市に展開したセンサーネットワークから、リアルタイムで通信データを収集・解析。</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🤖</span>
+      <div class="card-title">AI ANALYSIS CORE</div>
+      <span class="card-status standby">STANDBY</span>
+      <p class="card-desc">機械学習モデルによる行動パターン分析。次回スキャン予定: 06:00 UTC。</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <span>© CIPHER UNIT — ALL RIGHTS CLASSIFIED</span>
+  <span id="clock"></span>
+  <span>TERMINAL SESSION ACTIVE</span>
+</footer>
+
+<script>
+  // リアルタイムクロック
+  function updateClock() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('clock').textContent =
+      `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())} ` +
+      `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // カウントアップアニメーション
+  document.querySelectorAll('.stat-num').forEach(el => {
+    const raw = el.textContent.trim();
+    const match = raw.match(/^(\d+(\.\d+)?)(.*)$/);
+    if (!match) return;
+    const target = parseFloat(match[1]);
+    const suffix = match[3];
+    const isFloat = match[2] != null;
+    let start = null;
+    const duration = 1200;
+    function step(ts) {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const current = target * ease;
+      el.textContent = isFloat
+        ? current.toFixed(1) + suffix
+        : Math.floor(current) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+</script>
+</body>
+</html>
