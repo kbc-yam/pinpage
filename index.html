@@ -191,10 +191,15 @@
       user-select: none;
     }
 
-    .pin-display:focus-within,
-    .pin-display.focused {
-      border-color: rgba(0,255,231,0.8);
-      box-shadow: 0 0 20px rgba(0,255,231,0.15);
+    .pin-display.input-enabled {
+      border-color: rgba(255,59,92,0.8);
+      box-shadow: 0 0 20px rgba(255,59,92,0.15);
+    }
+
+    .pin-display.input-enabled:focus-within,
+    .pin-display.input-enabled.focused {
+      border-color: #ff3b5c;
+      box-shadow: 0 0 20px rgba(255,59,92,0.25);
       outline: none;
     }
 
@@ -626,7 +631,7 @@
       autocomplete="off"
     >
 
-    <div class="pin-display focused" id="pin-display" onclick="focusInput()">
+    <div class="pin-display focused input-enabled" id="pin-display" onclick="focusInput()">
       <span id="pin-mask"></span>
       <span class="cursor"></span>
     </div>
@@ -657,6 +662,7 @@
   const CORRECT_PIN = String(501 + Math.floor(Math.random() * 5)).padStart(4, '0');
   const TIMEOUT_SEC = 30;
   const input = document.getElementById('pin-input');
+  const pinDisplay = document.getElementById('pin-display');
   const pinMask = document.getElementById('pin-mask');
   const errorMsg = document.getElementById('error-msg');
   const flash = document.getElementById('flash');
@@ -680,6 +686,14 @@
   // ページ読み込み時に入力欄にフォーカス
   window.addEventListener('load', () => {
     focusInput();
+  });
+
+  window.addEventListener('blur', () => {
+    pinDisplay.classList.remove('input-enabled');
+  });
+
+  window.addEventListener('focus', () => {
+    if (!locked) pinDisplay.classList.add('input-enabled');
   });
 
   function focusInput() {
@@ -718,6 +732,7 @@
 
   function lockInput() {
     locked = true;
+    pinDisplay.classList.remove('input-enabled');
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     currentPin = '';
     input.value = '';
@@ -765,12 +780,28 @@
     updateDisplay();
   });
 
-  // キー入力ハンドラ（デスクトップ用: Enter のみ。数字/Backspace は input イベントで処理）
+  // キー入力ハンドラ: input が非フォーカス時の数字・Backspace を補完
   document.addEventListener('keydown', (e) => {
     if (locked) return;
     if (e.key === 'Enter') {
       submitPin();
+      return;
     }
+
+    // input 自身にフォーカスがある場合は、ネイティブの input イベントに任せる
+    if (document.activeElement === input) return;
+
+    if (/^\d$/.test(e.key) && currentPin.length < 4) {
+      currentPin += e.key;
+    } else if (e.key === 'Backspace') {
+      currentPin = currentPin.slice(0, -1);
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+    input.value = currentPin;
+    updateDisplay();
   });
 
   function updateDisplay() {
