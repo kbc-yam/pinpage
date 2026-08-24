@@ -93,22 +93,6 @@
     .signal i:nth-child(3) { height: 11px; }
     .signal i:nth-child(4) { height: 14px; opacity: .4; }
 
-    .wifi { width: 21px; height: 15px; position: relative; overflow: hidden; }
-
-    .wifi::before, .wifi::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      border: 2.5px solid #fff;
-      border-left-color: transparent;
-      border-bottom-color: transparent;
-      transform: translateX(-50%) rotate(-45deg);
-      border-radius: 50%;
-    }
-
-    .wifi::before { width: 19px; height: 19px; top: 0; }
-    .wifi::after { width: 9px; height: 9px; top: 7px; }
-
     .battery {
       width: 26px;
       height: 13px;
@@ -216,6 +200,9 @@
     }
 
     .app {
+      --start-x: 0px;
+      --start-y: 0px;
+      --arrive-delay: 0s;
       min-width: 0;
       padding: 0;
       border: 0;
@@ -226,7 +213,23 @@
       gap: 6px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+      opacity: 0;
+      animation: app-arrive .62s cubic-bezier(.2,.78,.24,1) var(--arrive-delay) forwards;
     }
+
+    .apps .app:nth-child(1) { --start-x: -105vw; --start-y: -12vh; --arrive-delay: .04s; }
+    .apps .app:nth-child(2) { --start-x: -35vw;  --start-y: -80vh; --arrive-delay: .09s; }
+    .apps .app:nth-child(3) { --start-x: 35vw;   --start-y: -80vh; --arrive-delay: .14s; }
+    .apps .app:nth-child(4) { --start-x: 105vw;  --start-y: -12vh; --arrive-delay: .19s; }
+    .apps .app:nth-child(5) { --start-x: -105vw; --start-y: 12vh;  --arrive-delay: .24s; }
+    .apps .app:nth-child(6) { --start-x: -35vw;  --start-y: 80vh;  --arrive-delay: .29s; }
+    .apps .app:nth-child(7) { --start-x: 35vw;   --start-y: 80vh;  --arrive-delay: .34s; }
+    .apps .app:nth-child(8) { --start-x: 105vw;  --start-y: 12vh;  --arrive-delay: .39s; }
+
+    .dock .app:nth-child(1) { --start-x: -40vw; --start-y: 55vh; --arrive-delay: .32s; }
+    .dock .app:nth-child(2) { --start-x: -14vw; --start-y: 55vh; --arrive-delay: .38s; }
+    .dock .app:nth-child(3) { --start-x: 14vw;  --start-y: 55vh; --arrive-delay: .44s; }
+    .dock .app:nth-child(4) { --start-x: 40vw;  --start-y: 55vh; --arrive-delay: .50s; }
 
     .app-icon {
       width: clamp(57px, 16vw, 68px);
@@ -403,6 +406,18 @@
       cursor: pointer;
     }
 
+    @keyframes app-arrive {
+      0% {
+        opacity: 0;
+        transform: translate3d(var(--start-x), var(--start-y), 0) scale(.78);
+      }
+      72% { opacity: 1; }
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
     @media (max-height: 730px) {
       .home { min-height: 560px; gap: 7px; }
       .widget { min-height: 102px; padding-block: 13px; margin-bottom: 2px; }
@@ -426,6 +441,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      .app { opacity: 1; animation: none !important; }
     }
   </style>
 </head>
@@ -437,7 +453,6 @@
       <span id="status-time">9:41</span>
       <div class="status-icons" aria-hidden="true">
         <span class="signal"><i></i><i></i><i></i><i></i></span>
-        <span class="wifi"></span>
         <span class="battery"></span>
       </div>
     </header>

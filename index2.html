@@ -388,14 +388,6 @@
       line-height: 1.7;
     }
 
-    .success-pin {
-      margin: 15px 0 24px;
-      font-size: clamp(50px, 16vw, 76px);
-      font-weight: 300;
-      letter-spacing: .17em;
-      padding-left: .17em;
-    }
-
     .locked .main,
     .locked .bottom-actions { pointer-events: none; }
 
@@ -568,14 +560,6 @@
 
   <input id="pin-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-hidden="true" tabindex="-1">
 
-  <section class="overlay" id="success-overlay" role="dialog" aria-modal="true" aria-labelledby="success-title">
-    <div class="overlay-lock" aria-hidden="true"></div>
-    <h2 id="success-title">ロック解除</h2>
-    <p>認証番号</p>
-    <div class="success-pin" id="success-pin">----</div>
-    <p><span id="success-seconds">3</span>秒後に移動します</p>
-  </section>
-
   <section class="overlay" id="lock-overlay" role="alertdialog" aria-modal="true" aria-labelledby="lock-title">
     <div class="overlay-lock" aria-hidden="true"></div>
     <h2 id="lock-title">iPhoneは使用できません</h2>
@@ -595,7 +579,6 @@
       const message = document.getElementById('message');
       const timer = document.getElementById('timer');
       const timerValue = document.getElementById('timer-value');
-      const successOverlay = document.getElementById('success-overlay');
       const lockOverlay = document.getElementById('lock-overlay');
 
       let currentPin = '';
@@ -671,19 +654,7 @@
       function showSuccess() {
         completed = true;
         if (timerFrame) cancelAnimationFrame(timerFrame);
-        document.getElementById('success-pin').textContent = CORRECT_PIN;
-        successOverlay.classList.add('active');
-
-        let seconds = 3;
-        const secondsNode = document.getElementById('success-seconds');
-        const countdown = window.setInterval(() => {
-          seconds -= 1;
-          secondsNode.textContent = String(seconds);
-          if (seconds <= 0) {
-            clearInterval(countdown);
-            window.location.href = 'top2.html';
-          }
-        }, 1000);
+        window.location.href = 'top2.html';
       }
 
       function lockScreen() {
