@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#12090e">
+  <title>パスコードを入力</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100svh;
+      overflow: hidden;
+      color: #fff;
+      background: #09090b;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    button {
+      color: inherit;
+      font: inherit;
+    }
+
+    .wallpaper {
+      position: fixed;
+      inset: -10vmax;
+      z-index: -2;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 11% 27%, rgba(145, 39, 0, .95) 0 7%, transparent 27%),
+        radial-gradient(ellipse at 84% 61%, rgba(95, 27, 77, .86) 0 9%, transparent 29%),
+        radial-gradient(ellipse at 47% 45%, rgba(69, 35, 61, .72) 0 7%, transparent 30%),
+        radial-gradient(ellipse at 28% 82%, rgba(160, 62, 0, .82) 0 4%, transparent 26%),
+        linear-gradient(140deg, #2c0903 0%, #0c080b 43%, #180915 73%, #050608 100%);
+      filter: blur(34px) saturate(125%);
+      transform: scale(1.08);
+    }
+
+    .wallpaper::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .18);
+    }
+
+    .screen {
+      width: min(100%, 520px);
+      height: 100svh;
+      min-height: 610px;
+      margin: 0 auto;
+      padding:
+        max(18px, env(safe-area-inset-top))
+        25px
+        max(12px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .status-bar {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -.2px;
+      text-shadow: 0 1px 5px rgba(0,0,0,.55);
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .signal {
+      width: 20px;
+      height: 14px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .signal i {
+      display: block;
+      width: 4px;
+      border-radius: 2px;
+      background: #fff;
+    }
+
+    .signal i:nth-child(1) { height: 5px; }
+    .signal i:nth-child(2) { height: 8px; }
+    .signal i:nth-child(3) { height: 11px; }
+    .signal i:nth-child(4) { height: 14px; opacity: .35; }
+
+    .wifi {
+      width: 21px;
+      height: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wifi::before,
+    .wifi::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      border: 2.5px solid #fff;
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      transform: translateX(-50%) rotate(-45deg);
+      border-radius: 50%;
+    }
+
+    .wifi::before { width: 19px; height: 19px; top: 0; }
+    .wifi::after  { width: 9px; height: 9px; top: 7px; }
+
+    .battery {
+      width: 26px;
+      height: 13px;
+      padding: 2px;
+      position: relative;
+      border: 1.5px solid rgba(255,255,255,.75);
+      border-radius: 4px;
+    }
+
+    .battery::before {
+      content: "";
+      display: block;
+      width: 62%;
+      height: 100%;
+      border-radius: 2px;
+      background: #fff;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      right: -4px;
+      width: 2px;
+      height: 6px;
+      border-radius: 0 2px 2px 0;
+      background: rgba(255,255,255,.45);
+    }
+
+    .main {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-top: clamp(8px, 4svh, 42px);
+    }
+
+    .lock {
+      width: 28px;
+      height: 25px;
+      position: relative;
+      margin-bottom: clamp(42px, 8svh, 80px);
+      border-radius: 5px;
+      background: #fff;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.25));
+    }
+
+    .lock::before {
+      content: "";
+      position: absolute;
+      width: 17px;
+      height: 18px;
+      left: 5.5px;
+      top: -13px;
+      border: 4px solid #fff;
+      border-bottom: 0;
+      border-radius: 11px 11px 0 0;
+    }
+
+    h1 {
+      margin: 0 0 22px;
+      font-size: clamp(25px, 7vw, 34px);
+      font-weight: 400;
+      letter-spacing: .02em;
+      text-shadow: 0 1px 8px rgba(0,0,0,.4);
+    }
+
+    .pin-dots {
+      height: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: clamp(26px, 8vw, 40px);
+      margin-bottom: clamp(40px, 7svh, 70px);
+    }
+
+    .pin-dot {
+      width: 17px;
+      height: 17px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      transition: transform .14s ease, background-color .14s ease;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,.3));
+    }
+
+    .pin-dot.filled {
+      background: #fff;
+      transform: scale(.95);
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, var(--key-size));
+      grid-template-rows: repeat(4, var(--key-size));
+      --key-size: clamp(67px, min(20.5vw, 10.5svh), 91px);
+      gap: clamp(10px, 2.2svh, 20px) clamp(24px, 8.2vw, 43px);
+    }
+
+    .key {
+      width: var(--key-size);
+      height: var(--key-size);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.22);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.025), 0 1px 6px rgba(0,0,0,.08);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      backdrop-filter: blur(14px) saturate(125%);
+      transition: background .08s ease, transform .08s ease;
+    }
+
+    .key:hover { background: rgba(255,255,255,.29); }
+    .key:active, .key.pressed {
+      background: rgba(255,255,255,.48);
+      transform: scale(.95);
+    }
+
+    .digit {
+      margin-top: -2px;
+      font-size: clamp(33px, 9vw, 45px);
+      font-weight: 300;
+      line-height: .9;
+      letter-spacing: -.03em;
+    }
+
+    .letters {
+      min-height: 13px;
+      margin-top: 7px;
+      font-size: clamp(9px, 2.6vw, 12px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: .28em;
+      padding-left: .28em;
+    }
+
+    .key.zero { grid-column: 2; grid-row: 4; }
+
+    .message {
+      height: 26px;
+      margin: 14px 0 0;
+      font-size: 15px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity .18s;
+      text-shadow: 0 1px 5px rgba(0,0,0,.6);
+    }
+
+    .message.show { opacity: 1; }
+
+    .message.shake { animation: shake .35s ease; }
+
+    .timer {
+      height: 17px;
+      margin-top: -5px;
+      font-size: 12px;
+      color: rgba(255,255,255,.76);
+      font-variant-numeric: tabular-nums;
+      opacity: 0;
+    }
+
+    .timer.show { opacity: 1; }
+    .timer.urgent { color: #ff8e8e; }
+
+    .bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 46px;
+      padding: 0 clamp(6px, 7vw, 36px) 2px;
+    }
+
+    .text-button {
+      min-width: 72px;
+      padding: 9px 0;
+      border: 0;
+      background: transparent;
+      font-size: clamp(16px, 4.6vw, 20px);
+      font-weight: 400;
+      cursor: pointer;
+      text-shadow: 0 1px 5px rgba(0,0,0,.55);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .text-button:first-child { text-align: left; }
+    .text-button:last-child { text-align: right; }
+    .text-button:active { opacity: .55; }
+
+    #pin-input {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      left: -20px;
+      bottom: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 38px;
+      text-align: center;
+      background: rgba(8, 7, 10, .86);
+      backdrop-filter: blur(28px) saturate(110%);
+    }
+
+    .overlay.active { display: flex; animation: fade-in .28s ease; }
+
+    .overlay-lock {
+      width: 50px;
+      height: 45px;
+      margin-bottom: 32px;
+      border-radius: 9px;
+      background: #fff;
+      position: relative;
+    }
+
+    .overlay-lock::before {
+      content: "";
+      position: absolute;
+      left: 9px;
+      top: -25px;
+      width: 24px;
+      height: 30px;
+      border: 5px solid #fff;
+      border-bottom: 0;
+      border-radius: 18px 18px 0 0;
+    }
+
+    .overlay h2 {
+      margin: 0 0 14px;
+      font-size: clamp(27px, 8vw, 40px);
+      font-weight: 500;
+    }
+
+    .overlay p {
+      max-width: 350px;
+      margin: 0;
+      color: rgba(255,255,255,.72);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .success-pin {
+      margin: 15px 0 24px;
+      font-size: clamp(50px, 16vw, 76px);
+      font-weight: 300;
+      letter-spacing: .17em;
+      padding-left: .17em;
+    }
+
+    .locked .main,
+    .locked .bottom-actions { pointer-events: none; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      50% { transform: translateX(8px); }
+      75% { transform: translateX(-4px); }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-height: 720px) {
+      .screen { min-height: 560px; padding-top: 10px; }
+      .status-bar { height: 25px; }
+      .main { padding-top: 2px; }
+      .lock { margin-bottom: 24px; transform: scale(.85); }
+      h1 { margin-bottom: 12px; }
+      .pin-dots { margin-bottom: 18px; }
+      .keypad { --key-size: clamp(61px, 9.3svh, 71px); gap: 7px 32px; }
+      .message { margin-top: 5px; height: 21px; }
+      .timer { margin-top: -3px; }
+      .bottom-actions { min-height: 34px; }
+    }
+
+    @media (min-width: 700px) {
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: rgba(0,0,0,.12);
+      }
+
+      .screen {
+        width: 390px;
+        padding: 18px 24px 14px;
+      }
+
+      .status-bar {
+        height: 28px;
+        font-size: 14px;
+      }
+
+      .main {
+        padding-top: 12px;
+      }
+
+      .lock {
+        width: 25px;
+        height: 23px;
+        margin-bottom: clamp(32px, 6svh, 54px);
+      }
+
+      .lock::before {
+        width: 15px;
+        height: 17px;
+        left: 5px;
+        top: -12px;
+      }
+
+      h1 {
+        margin-bottom: 18px;
+        font-size: 28px;
+      }
+
+      .pin-dots {
+        gap: 32px;
+        margin-bottom: clamp(28px, 5svh, 48px);
+      }
+
+      .pin-dot {
+        width: 15px;
+        height: 15px;
+      }
+
+      .keypad {
+        --key-size: clamp(64px, 8.2svh, 74px);
+        gap: clamp(8px, 1.5svh, 14px) 31px;
+      }
+
+      .digit {
+        font-size: 31px;
+      }
+
+      .letters {
+        margin-top: 6px;
+        font-size: 10px;
+      }
+
+      .message {
+        height: 22px;
+        margin-top: 8px;
+        font-size: 13px;
+      }
+
+      .timer {
+        font-size: 11px;
+      }
+
+      .bottom-actions {
+        min-height: 38px;
+        padding-inline: 20px;
+      }
+
+      .text-button {
+        font-size: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wallpaper" aria-hidden="true"></div>
+
+  <div class="screen" id="screen">
+    <header class="status-bar" aria-label="ステータスバー">
+      <span>SoftBank</span>
+      <div class="status-icons" aria-hidden="true">
+        <span class="signal"><i></i><i></i><i></i><i></i></span>
+        <span class="wifi"></span>
+        <span class="battery"></span>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="lock" aria-hidden="true"></div>
+      <h1>パスコードを入力</h1>
+
+      <div class="pin-dots" id="pin-dots" aria-label="4桁のパスコード">
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+      </div>
+
+      <div class="keypad" id="keypad" aria-label="数字キーパッド">
+        <button class="key" type="button" data-digit="1" aria-label="1"><span class="digit">1</span><span class="letters"></span></button>
+        <button class="key" type="button" data-digit="2" aria-label="2 ABC"><span class="digit">2</span><span class="letters">ABC</span></button>
+        <button class="key" type="button" data-digit="3" aria-label="3 DEF"><span class="digit">3</span><span class="letters">DEF</span></button>
+        <button class="key" type="button" data-digit="4" aria-label="4 GHI"><span class="digit">4</span><span class="letters">GHI</span></button>
+        <button class="key" type="button" data-digit="5" aria-label="5 JKL"><span class="digit">5</span><span class="letters">JKL</span></button>
+        <button class="key" type="button" data-digit="6" aria-label="6 MNO"><span class="digit">6</span><span class="letters">MNO</span></button>
+        <button class="key" type="button" data-digit="7" aria-label="7 PQRS"><span class="digit">7</span><span class="letters">PQRS</span></button>
+        <button class="key" type="button" data-digit="8" aria-label="8 TUV"><span class="digit">8</span><span class="letters">TUV</span></button>
+        <button class="key" type="button" data-digit="9" aria-label="9 WXYZ"><span class="digit">9</span><span class="letters">WXYZ</span></button>
+        <button class="key zero" type="button" data-digit="0" aria-label="0"><span class="digit">0</span><span class="letters"></span></button>
+      </div>
+
+      <div class="message" id="message" role="status" aria-live="polite"></div>
+      <div class="timer" id="timer" aria-live="off">残り <span id="timer-value">30.0</span> 秒</div>
+    </main>
+
+    <footer class="bottom-actions">
+      <button class="text-button" type="button" id="emergency">緊急</button>
+      <button class="text-button" type="button" id="cancel">キャンセル</button>
+    </footer>
+  </div>
+
+  <input id="pin-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-hidden="true" tabindex="-1">
+
+  <section class="overlay" id="success-overlay" role="dialog" aria-modal="true" aria-labelledby="success-title">
+    <div class="overlay-lock" aria-hidden="true"></div>
+    <h2 id="success-title">ロック解除</h2>
+    <p>認証番号</p>
+    <div class="success-pin" id="success-pin">----</div>
+    <p><span id="success-seconds">3</span>秒後に移動します</p>
+  </section>
+
+  <section class="overlay" id="lock-overlay" role="alertdialog" aria-modal="true" aria-labelledby="lock-title">
+    <div class="overlay-lock" aria-hidden="true"></div>
+    <h2 id="lock-title">iPhoneは使用できません</h2>
+    <p>セキュリティ保護のため、このセッションをロックしました。30秒後に最初の画面へ戻ります。</p>
+  </section>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const CORRECT_PIN = String(501 + Math.floor(Math.random() * 5)).padStart(4, '0');
+      const TIMEOUT_MS = 30000;
+      const screen = document.getElementById('screen');
+      const hiddenInput = document.getElementById('pin-input');
+      const dots = [...document.querySelectorAll('.pin-dot')];
+      const keys = [...document.querySelectorAll('.key')];
+      const message = document.getElementById('message');
+      const timer = document.getElementById('timer');
+      const timerValue = document.getElementById('timer-value');
+      const successOverlay = document.getElementById('success-overlay');
+      const lockOverlay = document.getElementById('lock-overlay');
+
+      let currentPin = '';
+      let timerStart = 0;
+      let timerFrame = 0;
+      let locked = false;
+      let completed = false;
+
+      function render() {
+        dots.forEach((dot, index) => dot.classList.toggle('filled', index < currentPin.length));
+        hiddenInput.value = currentPin;
+      }
+
+      function clearMessage() {
+        message.classList.remove('show', 'shake');
+        message.textContent = '';
+      }
+
+      function addDigit(digit) {
+        if (locked || completed || currentPin.length >= 4) return;
+        clearMessage();
+        currentPin += digit;
+        render();
+
+        if (currentPin.length === 4) {
+          window.setTimeout(checkPin, 115);
+        }
+      }
+
+      function removeDigit() {
+        if (locked || completed || !currentPin.length) return;
+        clearMessage();
+        currentPin = currentPin.slice(0, -1);
+        render();
+      }
+
+      function checkPin() {
+        if (currentPin.length !== 4 || locked || completed) return;
+
+        if (currentPin === CORRECT_PIN) {
+          showSuccess();
+          return;
+        }
+
+        startTimer();
+        currentPin = '';
+        render();
+        message.textContent = 'パスコードが違います';
+        message.classList.remove('shake');
+        void message.offsetWidth;
+        message.classList.add('show', 'shake');
+      }
+
+      function startTimer() {
+        if (timerStart) return;
+        timerStart = performance.now();
+        timer.classList.add('show');
+
+        const tick = now => {
+          const remaining = Math.max(0, TIMEOUT_MS - (now - timerStart));
+          timerValue.textContent = (remaining / 1000).toFixed(1).padStart(4, '0');
+          timer.classList.toggle('urgent', remaining <= 10000);
+
+          if (remaining <= 0) {
+            lockScreen();
+            return;
+          }
+          timerFrame = requestAnimationFrame(tick);
+        };
+        timerFrame = requestAnimationFrame(tick);
+      }
+
+      function showSuccess() {
+        completed = true;
+        if (timerFrame) cancelAnimationFrame(timerFrame);
+        document.getElementById('success-pin').textContent = CORRECT_PIN;
+        successOverlay.classList.add('active');
+
+        let seconds = 3;
+        const secondsNode = document.getElementById('success-seconds');
+        const countdown = window.setInterval(() => {
+          seconds -= 1;
+          secondsNode.textContent = String(seconds);
+          if (seconds <= 0) {
+            clearInterval(countdown);
+            window.location.href = 'top2.html';
+          }
+        }, 1000);
+      }
+
+      function lockScreen() {
+        locked = true;
+        currentPin = '';
+        render();
+        document.body.classList.add('locked');
+        lockOverlay.classList.add('active');
+        window.setTimeout(() => {
+          window.location.href = 'index2.html';
+        }, 30000);
+      }
+
+      keys.forEach(key => {
+        key.addEventListener('click', () => addDigit(key.dataset.digit));
+      });
+
+      document.addEventListener('keydown', event => {
+        if (/^[0-9]$/.test(event.key)) {
+          event.preventDefault();
+          const matchingKey = keys.find(key => key.dataset.digit === event.key);
+          if (matchingKey) {
+            matchingKey.classList.add('pressed');
+            window.setTimeout(() => matchingKey.classList.remove('pressed'), 90);
+          }
+          addDigit(event.key);
+        } else if (event.key === 'Backspace' || event.key === 'Delete') {
+          event.preventDefault();
+          removeDigit();
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          checkPin();
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          currentPin = '';
+          clearMessage();
+          render();
+        }
+      });
+
+      hiddenInput.addEventListener('input', () => {
+        if (locked || completed) return;
+        currentPin = hiddenInput.value.replace(/\D/g, '').slice(0, 4);
+        render();
+        if (currentPin.length === 4) window.setTimeout(checkPin, 115);
+      });
+
+      document.getElementById('cancel').addEventListener('click', () => {
+        currentPin = '';
+        clearMessage();
+        render();
+      });
+
+      document.getElementById('emergency').addEventListener('click', () => {
+        message.textContent = '緊急通報は利用できません';
+        message.classList.add('show');
+      });
+
+      screen.addEventListener('click', event => {
+        if (!event.target.closest('button') && !locked && !completed) hiddenInput.focus({ preventScroll: true });
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16080d">
+  <title>ホーム</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    html, body { width: 100%; min-height: 100%; margin: 0; }
+
+    body {
+      min-height: 100svh;
+      overflow: hidden;
+      color: #fff;
+      background: #09090b;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    button { color: inherit; font: inherit; }
+
+    .wallpaper {
+      position: fixed;
+      inset: -10vmax;
+      z-index: -2;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 9% 24%, rgba(150, 42, 0, .98) 0 6%, transparent 28%),
+        radial-gradient(ellipse at 88% 64%, rgba(100, 24, 82, .88) 0 8%, transparent 30%),
+        radial-gradient(ellipse at 48% 44%, rgba(67, 31, 61, .76) 0 8%, transparent 31%),
+        radial-gradient(ellipse at 28% 86%, rgba(166, 65, 0, .84) 0 4%, transparent 27%),
+        linear-gradient(140deg, #310a03 0%, #0d080b 43%, #1a0917 74%, #050608 100%);
+      filter: blur(35px) saturate(130%);
+      transform: scale(1.08);
+    }
+
+    .wallpaper::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.09);
+    }
+
+    .home {
+      width: min(100%, 430px);
+      height: 100svh;
+      min-height: 620px;
+      margin: 0 auto;
+      padding:
+        max(14px, env(safe-area-inset-top))
+        20px
+        max(10px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-rows: 31px auto minmax(0, 1fr) auto 18px;
+      gap: 12px;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5px;
+      font-size: 15px;
+      font-weight: 650;
+      text-shadow: 0 1px 5px rgba(0,0,0,.6);
+    }
+
+    .status-icons { display: flex; align-items: center; gap: 8px; }
+
+    .signal {
+      width: 20px;
+      height: 14px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .signal i { display: block; width: 4px; border-radius: 2px; background: #fff; }
+    .signal i:nth-child(1) { height: 5px; }
+    .signal i:nth-child(2) { height: 8px; }
+    .signal i:nth-child(3) { height: 11px; }
+    .signal i:nth-child(4) { height: 14px; opacity: .4; }
+
+    .wifi { width: 21px; height: 15px; position: relative; overflow: hidden; }
+
+    .wifi::before, .wifi::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      border: 2.5px solid #fff;
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      transform: translateX(-50%) rotate(-45deg);
+      border-radius: 50%;
+    }
+
+    .wifi::before { width: 19px; height: 19px; top: 0; }
+    .wifi::after { width: 9px; height: 9px; top: 7px; }
+
+    .battery {
+      width: 26px;
+      height: 13px;
+      padding: 2px;
+      position: relative;
+      border: 1.5px solid rgba(255,255,255,.8);
+      border-radius: 4px;
+    }
+
+    .battery::before {
+      content: "";
+      display: block;
+      width: 68%;
+      height: 100%;
+      border-radius: 2px;
+      background: #fff;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      right: -4px;
+      width: 2px;
+      height: 6px;
+      border-radius: 0 2px 2px 0;
+      background: rgba(255,255,255,.5);
+    }
+
+    .widget {
+      min-height: 124px;
+      margin: 3px 4px 8px;
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(55,18,21,.48), rgba(29,20,37,.45));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 9px 30px rgba(0,0,0,.16);
+      backdrop-filter: blur(22px) saturate(135%);
+    }
+
+    .date {
+      margin-bottom: 5px;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,.69);
+    }
+
+    .clock {
+      font-size: clamp(39px, 12vw, 51px);
+      font-weight: 280;
+      line-height: 1;
+      letter-spacing: -.035em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .auth-badge {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #dbffe8;
+      background: rgba(63, 209, 115, .2);
+      box-shadow: inset 0 0 0 1px rgba(133,255,177,.22);
+    }
+
+    .auth-badge svg {
+      width: 29px;
+      height: 29px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .auth-text {
+      grid-column: 1 / -1;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: rgba(255,255,255,.72);
+    }
+
+    .auth-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #53df85;
+      box-shadow: 0 0 8px rgba(83,223,133,.7);
+    }
+
+    .apps {
+      align-content: start;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      row-gap: clamp(19px, 3.1svh, 29px);
+      column-gap: 9px;
+      padding: 2px 0 0;
+    }
+
+    .app {
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-icon {
+      width: clamp(57px, 16vw, 68px);
+      height: clamp(57px, 16vw, 68px);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      border-radius: 15px;
+      background: var(--icon-bg);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), 0 4px 12px rgba(0,0,0,.19);
+      transition: transform .1s ease, filter .1s ease;
+    }
+
+    .app:active .app-icon { transform: scale(.9); filter: brightness(.82); }
+    .app-icon::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(255,255,255,.24), transparent 45%);
+      pointer-events: none;
+    }
+
+    .app-icon svg {
+      width: 33px;
+      height: 33px;
+      position: relative;
+      z-index: 1;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.18));
+    }
+
+    .app-label {
+      max-width: 84px;
+      overflow: hidden;
+      color: #fff;
+      font-size: 11px;
+      line-height: 1.15;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 4px rgba(0,0,0,.8);
+    }
+
+    .icon-command { --icon-bg: linear-gradient(145deg, #4b6fff, #2432b6); }
+    .icon-intel { --icon-bg: linear-gradient(145deg, #37bdf2, #1269c9); }
+    .icon-mission { --icon-bg: linear-gradient(145deg, #ff7458, #cc213c); }
+    .icon-assets { --icon-bg: linear-gradient(145deg, #aa72ff, #6436c7); }
+    .icon-comms { --icon-bg: linear-gradient(145deg, #52de78, #139a4a); }
+    .icon-vault { --icon-bg: linear-gradient(145deg, #f9bd40, #d16c12); }
+    .icon-monitor { --icon-bg: linear-gradient(145deg, #586575, #222a36); }
+    .icon-settings { --icon-bg: linear-gradient(145deg, #aab2bd, #626d7a); }
+
+    .dock {
+      min-height: 87px;
+      padding: 10px 13px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: center;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 27px;
+      background: rgba(255,255,255,.16);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.11), 0 8px 30px rgba(0,0,0,.15);
+      backdrop-filter: blur(24px) saturate(155%);
+    }
+
+    .dock .app { gap: 0; }
+    .dock .app-icon { width: 59px; height: 59px; border-radius: 14px; }
+    .dock .app-label { display: none; }
+    .icon-phone { --icon-bg: linear-gradient(145deg, #54e77a, #17a54c); }
+    .icon-mail { --icon-bg: linear-gradient(145deg, #5ebdff, #1876e4); }
+    .icon-browser { --icon-bg: linear-gradient(145deg, #5bc7ff, #087be8); }
+    .icon-logout { --icon-bg: linear-gradient(145deg, #ff735e, #ce2637); }
+
+    .home-indicator {
+      width: 132px;
+      height: 5px;
+      margin: 1px auto 0;
+      border-radius: 5px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 1px 3px rgba(0,0,0,.28);
+    }
+
+    .sheet-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 12px;
+      visibility: hidden;
+      opacity: 0;
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(0);
+      transition: opacity .22s ease, visibility .22s, backdrop-filter .22s ease;
+    }
+
+    .sheet-layer.open {
+      visibility: visible;
+      opacity: 1;
+      backdrop-filter: blur(8px);
+    }
+
+    .sheet {
+      width: min(100%, 430px);
+      max-height: min(75svh, 620px);
+      padding: 9px 20px max(24px, env(safe-area-inset-bottom));
+      overflow: auto;
+      color: #16161a;
+      border-radius: 26px;
+      background: rgba(246,246,249,.96);
+      box-shadow: 0 -10px 45px rgba(0,0,0,.28);
+      transform: translateY(calc(100% + 20px));
+      transition: transform .3s cubic-bezier(.22,.72,.22,1);
+    }
+
+    .sheet-layer.open .sheet { transform: translateY(0); }
+    .sheet-grabber { width: 38px; height: 5px; margin: 0 auto 17px; border-radius: 4px; background: #c5c5ca; }
+
+    .sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .sheet-title { margin: 0; font-size: 25px; font-weight: 700; letter-spacing: -.02em; }
+
+    .close-sheet {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 50%;
+      color: #6c6c72;
+      background: #dedee3;
+      font-size: 19px;
+      font-weight: 600;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .sheet-summary { margin: -8px 0 18px; color: #727279; font-size: 13px; line-height: 1.55; }
+
+    .info-card {
+      margin-bottom: 10px;
+      padding: 15px 16px;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    }
+
+    .info-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .info-row + .info-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid #ededf0; }
+    .info-name { font-size: 14px; font-weight: 600; }
+    .info-detail { margin-top: 4px; color: #797980; font-size: 12px; }
+    .pill { flex: 0 0 auto; padding: 4px 8px; border-radius: 20px; color: #198944; background: #e3f8e9; font-size: 10px; font-weight: 700; }
+    .pill.warn { color: #b56800; background: #fff2d3; }
+    .pill.alert { color: #c42c3d; background: #ffe5e9; }
+
+    .logout-button {
+      width: 100%;
+      margin-top: 8px;
+      padding: 14px;
+      border: 0;
+      border-radius: 14px;
+      color: #fff;
+      background: #ef394b;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    @media (max-height: 730px) {
+      .home { min-height: 560px; gap: 7px; }
+      .widget { min-height: 102px; padding-block: 13px; margin-bottom: 2px; }
+      .clock { font-size: 39px; }
+      .auth-badge { width: 48px; height: 48px; }
+      .auth-text { margin-top: 7px; }
+      .apps { row-gap: 12px; }
+      .app-icon { width: 54px; height: 54px; border-radius: 13px; }
+      .app-icon svg { width: 28px; height: 28px; }
+      .dock { min-height: 70px; padding-block: 7px; }
+      .dock .app-icon { width: 52px; height: 52px; }
+    }
+
+    @media (min-width: 700px) {
+      .home { width: 390px; max-height: 844px; padding-inline: 20px; }
+      .app-icon { width: 60px; height: 60px; }
+      .dock .app-icon { width: 56px; height: 56px; }
+      .clock { font-size: 45px; }
+      .sheet-layer { align-items: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wallpaper" aria-hidden="true"></div>
+
+  <main class="home">
+    <header class="status-bar" aria-label="ステータスバー">
+      <span id="status-time">9:41</span>
+      <div class="status-icons" aria-hidden="true">
+        <span class="signal"><i></i><i></i><i></i><i></i></span>
+        <span class="wifi"></span>
+        <span class="battery"></span>
+      </div>
+    </header>
+
+    <section class="widget" aria-label="認証ステータス">
+      <div>
+        <div class="date" id="date">8月24日 月曜日</div>
+        <div class="clock" id="clock">9:41</div>
+      </div>
+      <div class="auth-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="auth-text"><span class="auth-dot"></span>オペレーター認証済み・セキュア接続</div>
+    </section>
+
+    <section class="apps" aria-label="アプリ">
+      <button class="app" data-app="command" type="button">
+        <span class="app-icon icon-command"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg></span>
+        <span class="app-label">司令部</span>
+      </button>
+      <button class="app" data-app="intel" type="button">
+        <span class="app-icon icon-intel"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6m-3-3v6"/></svg></span>
+        <span class="app-label">情報</span>
+      </button>
+      <button class="app" data-app="mission" type="button">
+        <span class="app-icon icon-mission"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></span>
+        <span class="app-label">ミッション</span>
+      </button>
+      <button class="app" data-app="assets" type="button">
+        <span class="app-icon icon-assets"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM8 7V4h8v3M4 12h16"/></svg></span>
+        <span class="app-label">アセット</span>
+      </button>
+      <button class="app" data-app="comms" type="button">
+        <span class="app-icon icon-comms"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3 1.5-5A7.5 7.5 0 1 1 21 15Z"/></svg></span>
+        <span class="app-label">通信</span>
+      </button>
+      <button class="app" data-app="vault" type="button">
+        <span class="app-icon icon-vault"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><circle cx="12" cy="12" r="3"/><path d="M12 9V7m0 10v-2m3-3h2m-10 0h2"/></svg></span>
+        <span class="app-label">保管庫</span>
+      </button>
+      <button class="app" data-app="monitor" type="button">
+        <span class="app-icon icon-monitor"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M7 11h2l2-3 2 6 2-3h2"/></svg></span>
+        <span class="app-label">モニター</span>
+      </button>
+      <button class="app" data-app="settings" type="button">
+        <span class="app-icon icon-settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1A8 8 0 0 0 15 6l-.3-2.5h-4L10.4 6A8 8 0 0 0 8.7 7L6.5 6.1l-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.2-1A8 8 0 0 0 10.4 18l.3 2.5h4L15 18a8 8 0 0 0 1.7-1.1l2.2 1 2-3.4-2-1.5a7 7 0 0 0 .1-1Z"/></svg></span>
+        <span class="app-label">設定</span>
+      </button>
+    </section>
+
+    <nav class="dock" aria-label="Dock">
+      <button class="app" data-app="phone" type="button"><span class="app-icon icon-phone"><svg viewBox="0 0 24 24"><path d="M6.5 3.5 9 8l-2 2c1.6 3.2 3.8 5.4 7 7l2-2 4.5 2.5c.2 1.3-.2 2.7-1.2 3.5C11 21 3 13 3 4.7c.8-1 2.2-1.4 3.5-1.2Z"/></svg></span><span class="app-label">電話</span></button>
+      <button class="app" data-app="comms" type="button"><span class="app-icon icon-mail"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span><span class="app-label">通信</span></button>
+      <button class="app" data-app="browser" type="button"><span class="app-icon icon-browser"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 5-5 2 2-5 5-2Z"/></svg></span><span class="app-label">ブラウザ</span></button>
+      <button class="app" data-app="logout" type="button"><span class="app-icon icon-logout"><svg viewBox="0 0 24 24"><path d="M10 4H5v16h5m5-4 4-4-4-4m4 4H9"/></svg></span><span class="app-label">ログアウト</span></button>
+    </nav>
+
+    <div class="home-indicator" aria-hidden="true"></div>
+  </main>
+
+  <div class="sheet-layer" id="sheet-layer" aria-hidden="true">
+    <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-grabber"></div>
+      <div class="sheet-header">
+        <h2 class="sheet-title" id="sheet-title">司令部</h2>
+        <button class="close-sheet" id="close-sheet" type="button" aria-label="閉じる">×</button>
+      </div>
+      <p class="sheet-summary" id="sheet-summary"></p>
+      <div id="sheet-content"></div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const weekday = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+      const statusTime = document.getElementById('status-time');
+      const clock = document.getElementById('clock');
+      const date = document.getElementById('date');
+      const layer = document.getElementById('sheet-layer');
+      const title = document.getElementById('sheet-title');
+      const summary = document.getElementById('sheet-summary');
+      const content = document.getElementById('sheet-content');
+
+      const appData = {
+        command: {
+          title: '司令部',
+          summary: 'グローバル・オペレーションの現在状況',
+          rows: [['稼働中エージェント','47名','ok'],['ライブミッション','12件','ok'],['脅威アラート','6件','alert']]
+        },
+        intel: {
+          title: '情報',
+          summary: '直近のインテリジェンスフィード',
+          rows: [['セクター7','未認証アクセスを遮断','warn'],['APEX-9','データ受信完了','ok'],['NIGHTFALL','チェックポイント通過','ok']]
+        },
+        mission: {
+          title: 'ミッション',
+          summary: '現在追跡中の作戦',
+          rows: [['NIGHTFALL','進行中','ok'],['GHOST SIGNAL','待機中','warn'],['RED LOTUS','重大','alert']]
+        },
+        assets: {
+          title: 'アセット',
+          summary: '利用可能な情報資産とシステム',
+          rows: [['Crypto Vault','オンライン','ok'],['Signal Intercept','オンライン','ok'],['AI Analysis Core','待機中','warn']]
+        },
+        comms: {
+          title: 'セキュア通信',
+          summary: '暗号化された通信チャンネル',
+          rows: [['Alpha Channel','接続済み','ok'],['Bravo Channel','接続済み','ok'],['Emergency Line','待機中','warn']]
+        },
+        vault: {
+          title: '保管庫',
+          summary: '暗号化アーカイブへのアクセス',
+          rows: [['機密ファイル','2,847件','ok'],['本日の追加','18件','ok'],['保留中','3件','warn']]
+        },
+        monitor: {
+          title: 'システムモニター',
+          summary: '全サービスの稼働状況',
+          rows: [['ネットワーク','99.9%','ok'],['暗号化サービス','正常','ok'],['バックアップ','進行中','warn']]
+        },
+        settings: {
+          title: '設定',
+          summary: 'この端末のセキュリティ設定',
+          rows: [['生体認証','有効','ok'],['自動ロック','30秒','ok'],['通知','重要のみ','ok']]
+        },
+        phone: {
+          title: '緊急回線',
+          summary: 'セキュア音声回線',
+          rows: [['本部','接続可能','ok'],['セキュリティチーム','接続可能','ok'],['外部回線','制限中','warn']]
+        },
+        browser: {
+          title: 'セキュアブラウザ',
+          summary: '保護された内部ネットワーク',
+          rows: [['イントラネット','オンライン','ok'],['脅威データベース','更新済み','ok'],['外部ネットワーク','遮断中','warn']]
+        }
+      };
+
+      function updateTime() {
+        const now = new Date();
+        const timeText = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+        statusTime.textContent = timeText;
+        clock.textContent = timeText;
+        date.textContent = `${now.getMonth() + 1}月${now.getDate()}日 ${weekday[now.getDay()]}`;
+      }
+
+      function renderRows(rows) {
+        return `<div class="info-card">${rows.map(([name, detail, state]) => `
+          <div class="info-row">
+            <div><div class="info-name">${name}</div><div class="info-detail">${detail}</div></div>
+            <span class="pill ${state === 'warn' ? 'warn' : state === 'alert' ? 'alert' : ''}">${state === 'warn' ? '注意' : state === 'alert' ? '警告' : '正常'}</span>
+          </div>`).join('')}</div>`;
+      }
+
+      function openApp(name) {
+        if (name === 'logout') {
+          title.textContent = 'ログアウト';
+          summary.textContent = 'このセキュアセッションを終了しますか？';
+          content.innerHTML = '<button class="logout-button" id="confirm-logout" type="button">ロック画面に戻る</button>';
+          document.getElementById('confirm-logout').addEventListener('click', () => { window.location.href = 'index2.html'; });
+        } else {
+          const data = appData[name];
+          if (!data) return;
+          title.textContent = data.title;
+          summary.textContent = data.summary;
+          content.innerHTML = renderRows(data.rows);
+        }
+        layer.classList.add('open');
+        layer.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeSheet() {
+        layer.classList.remove('open');
+        layer.setAttribute('aria-hidden', 'true');
+      }
+
+      document.querySelectorAll('[data-app]').forEach(button => {
+        button.addEventListener('click', () => openApp(button.dataset.app));
+      });
+      document.getElementById('close-sheet').addEventListener('click', closeSheet);
+      layer.addEventListener('click', event => { if (event.target === layer) closeSheet(); });
+      document.addEventListener('keydown', event => { if (event.key === 'Escape') closeSheet(); });
+
+      updateTime();
+      window.setInterval(updateTime, 1000);
+    })();
+  </script>
+</body>
+</html>
