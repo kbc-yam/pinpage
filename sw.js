@@ -1,4 +1,4 @@
-const CACHE_NAME = 'secure-home-v2';
+const CACHE_NAME = 'secure-home-v3';
 const APP_SHELL = [
   './index2.html',
   './top2.html',
