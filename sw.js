@@ -1,10 +1,22 @@
-const CACHE_NAME = 'secure-home-v3';
+const CACHE_NAME = 'secure-home-v4';
 const APP_SHELL = [
   './index2.html',
   './top2.html',
   './manifest.webmanifest',
   './icons/app-icon-192.png',
-  './icons/app-icon-512.png'
+  './icons/app-icon-512.png',
+  './top2icons/chatgpt.webp',
+  './top2icons/gemini.webp',
+  './top2icons/calendar.webp',
+  './top2icons/photo.webp',
+  './top2icons/line.webp',
+  './top2icons/googledrive.webp',
+  './top2icons/youtube.webp',
+  './top2icons/setting.webp',
+  './top2icons/tel.webp',
+  './top2icons/gmail.webp',
+  './top2icons/chrome.webp',
+  './top2icons/auth.webp'
 ];
 
 self.addEventListener('install', event => {

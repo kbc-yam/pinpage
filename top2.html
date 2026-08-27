@@ -266,6 +266,23 @@
       filter: drop-shadow(0 1px 2px rgba(0,0,0,.18));
     }
 
+    .app-icon.has-image { background: transparent; }
+    .app-icon.has-image::after { display: none; }
+
+    .app-icon img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .app-icon.youtube-mark { background: #fff; }
+    .app-icon.youtube-mark img {
+      width: 76%;
+      height: 76%;
+      object-fit: contain;
+    }
+
     .app-label {
       max-width: 84px;
       overflow: hidden;
@@ -470,44 +487,44 @@
 
     <section class="apps" aria-label="アプリ">
       <button class="app" data-app="command" type="button">
-        <span class="app-icon icon-command"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg></span>
-        <span class="app-label">司令部</span>
+        <span class="app-icon icon-command has-image"><img src="top2icons/chatgpt.webp" alt="" draggable="false"></span>
+        <span class="app-label">ChatGPT</span>
       </button>
       <button class="app" data-app="intel" type="button">
-        <span class="app-icon icon-intel"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6m-3-3v6"/></svg></span>
-        <span class="app-label">情報</span>
+        <span class="app-icon icon-intel has-image"><img src="top2icons/gemini.webp" alt="" draggable="false"></span>
+        <span class="app-label">Gemini</span>
       </button>
       <button class="app" data-app="mission" type="button">
-        <span class="app-icon icon-mission"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></span>
-        <span class="app-label">ミッション</span>
+        <span class="app-icon icon-mission has-image"><img src="top2icons/calendar.webp" alt="" draggable="false"></span>
+        <span class="app-label">カレンダー</span>
       </button>
       <button class="app" data-app="assets" type="button">
-        <span class="app-icon icon-assets"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM8 7V4h8v3M4 12h16"/></svg></span>
-        <span class="app-label">アセット</span>
+        <span class="app-icon icon-assets has-image"><img src="top2icons/photo.webp" alt="" draggable="false"></span>
+        <span class="app-label">フォト</span>
       </button>
       <button class="app" data-app="comms" type="button">
-        <span class="app-icon icon-comms"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3 1.5-5A7.5 7.5 0 1 1 21 15Z"/></svg></span>
-        <span class="app-label">通信</span>
+        <span class="app-icon icon-comms has-image"><img src="top2icons/line.webp" alt="" draggable="false"></span>
+        <span class="app-label">LINE</span>
       </button>
       <button class="app" data-app="vault" type="button">
-        <span class="app-icon icon-vault"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><circle cx="12" cy="12" r="3"/><path d="M12 9V7m0 10v-2m3-3h2m-10 0h2"/></svg></span>
-        <span class="app-label">保管庫</span>
+        <span class="app-icon icon-vault has-image"><img src="top2icons/googledrive.webp" alt="" draggable="false"></span>
+        <span class="app-label">ドライブ</span>
       </button>
       <button class="app" data-app="monitor" type="button">
-        <span class="app-icon icon-monitor"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M7 11h2l2-3 2 6 2-3h2"/></svg></span>
-        <span class="app-label">モニター</span>
+        <span class="app-icon icon-monitor has-image youtube-mark"><img src="top2icons/youtube.webp" alt="" draggable="false"></span>
+        <span class="app-label">YouTube</span>
       </button>
       <button class="app" data-app="settings" type="button">
-        <span class="app-icon icon-settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1A8 8 0 0 0 15 6l-.3-2.5h-4L10.4 6A8 8 0 0 0 8.7 7L6.5 6.1l-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.2-1A8 8 0 0 0 10.4 18l.3 2.5h4L15 18a8 8 0 0 0 1.7-1.1l2.2 1 2-3.4-2-1.5a7 7 0 0 0 .1-1Z"/></svg></span>
+        <span class="app-icon icon-settings has-image"><img src="top2icons/setting.webp" alt="" draggable="false"></span>
         <span class="app-label">設定</span>
       </button>
     </section>
 
     <nav class="dock" aria-label="Dock">
-      <button class="app" data-app="phone" type="button"><span class="app-icon icon-phone"><svg viewBox="0 0 24 24"><path d="M6.5 3.5 9 8l-2 2c1.6 3.2 3.8 5.4 7 7l2-2 4.5 2.5c.2 1.3-.2 2.7-1.2 3.5C11 21 3 13 3 4.7c.8-1 2.2-1.4 3.5-1.2Z"/></svg></span><span class="app-label">電話</span></button>
-      <button class="app" data-app="comms" type="button"><span class="app-icon icon-mail"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span><span class="app-label">通信</span></button>
-      <button class="app" data-app="browser" type="button"><span class="app-icon icon-browser"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 5-5 2 2-5 5-2Z"/></svg></span><span class="app-label">ブラウザ</span></button>
-      <button class="app" data-app="logout" type="button"><span class="app-icon icon-logout"><svg viewBox="0 0 24 24"><path d="M10 4H5v16h5m5-4 4-4-4-4m4 4H9"/></svg></span><span class="app-label">ログアウト</span></button>
+      <button class="app" data-app="phone" type="button"><span class="app-icon icon-phone has-image"><img src="top2icons/tel.webp" alt="" draggable="false"></span><span class="app-label">電話</span></button>
+      <button class="app" data-app="comms" type="button"><span class="app-icon icon-mail has-image"><img src="top2icons/gmail.webp" alt="" draggable="false"></span><span class="app-label">通信</span></button>
+      <button class="app" data-app="browser" type="button"><span class="app-icon icon-browser has-image"><img src="top2icons/chrome.webp" alt="" draggable="false"></span><span class="app-label">ブラウザ</span></button>
+      <button class="app" data-app="logout" type="button"><span class="app-icon icon-logout has-image"><img src="top2icons/auth.webp" alt="" draggable="false"></span><span class="app-label">ログアウト</span></button>
     </nav>
 
     <div class="home-indicator" aria-hidden="true"></div>
