@@ -522,7 +522,7 @@
 
     <nav class="dock" aria-label="Dock">
       <button class="app" data-app="phone" type="button"><span class="app-icon icon-phone has-image"><img src="top2icons/tel.webp" alt="" draggable="false"></span><span class="app-label">電話</span></button>
-      <button class="app" data-app="comms" type="button"><span class="app-icon icon-mail has-image"><img src="top2icons/gmail.webp" alt="" draggable="false"></span><span class="app-label">通信</span></button>
+      <button class="app" data-app="mail" type="button" aria-label="メール"><span class="app-icon icon-mail has-image"><img src="top2icons/gmail.webp" alt="" draggable="false"></span><span class="app-label">メール</span></button>
       <button class="app" data-app="browser" type="button"><span class="app-icon icon-browser has-image"><img src="top2icons/chrome.webp" alt="" draggable="false"></span><span class="app-label">ブラウザ</span></button>
       <button class="app" data-app="logout" type="button"><span class="app-icon icon-logout has-image"><img src="top2icons/auth.webp" alt="" draggable="false"></span><span class="app-label">ログアウト</span></button>
     </nav>
@@ -555,6 +555,25 @@
       const summary = document.getElementById('sheet-summary');
       const content = document.getElementById('sheet-content');
       const browserStartUrl = 'https://www.google.com/';
+      const phoneUrl = 'tel:';
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      const webAppTargets = {
+        chatgpt: {
+          url: 'https://chatgpt.com/',
+          androidPackage: 'com.openai.chatgpt'
+        },
+        gemini: {
+          url: 'https://gemini.google.com/app',
+          androidPackage: 'com.google.android.apps.bard'
+        },
+        youtube: {
+          url: 'https://www.youtube.com/',
+          androidPackage: 'com.google.android.youtube'
+        }
+      };
 
       const appData = {
         command: {
@@ -578,7 +597,7 @@
           rows: [['Crypto Vault','オンライン','ok'],['Signal Intercept','オンライン','ok'],['AI Analysis Core','待機中','warn']]
         },
         comms: {
-          title: 'セキュア通信',
+          title: 'メール',
           summary: '暗号化された通信チャンネル',
           rows: [['Alpha Channel','接続済み','ok'],['Bravo Channel','接続済み','ok'],['Emergency Line','待機中','warn']]
         },
@@ -598,7 +617,7 @@
           rows: [['生体認証','有効','ok'],['自動ロック','30秒','ok'],['通知','重要のみ','ok']]
         },
         phone: {
-          title: '緊急回線',
+          title: '通話',
           summary: 'セキュア音声回線',
           rows: [['本部','接続可能','ok'],['セキュリティチーム','接続可能','ok'],['外部回線','制限中','warn']]
         },
@@ -625,7 +644,118 @@
           </div>`).join('')}</div>`;
       }
 
+      function createAndroidIntent(webUrl, packageName, fallbackUrl = '') {
+        const target = new URL(webUrl);
+        const fallback = fallbackUrl
+          ? `S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};`
+          : '';
+        return `intent://${target.host}${target.pathname}${target.search}`
+          + `#Intent;scheme=${target.protocol.slice(0, -1)};package=${packageName};${fallback}end`;
+      }
+
+      function openInstalledAppOrWeb(target) {
+        if (isAndroid) {
+          window.location.href = createAndroidIntent(target.url, target.androidPackage, target.url);
+          return;
+        }
+
+        // iOSではHTTPSのUniversal Link、その他の端末では通常のWeb URLとして処理される。
+        window.location.href = target.url;
+      }
+
+      function openCalendarApp() {
+        if (isAndroid) {
+          window.location.href = 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_CALENDAR;end';
+        } else if (isIOS) {
+          window.location.href = 'calshow:';
+        }
+      }
+
+      function openPhotosApp() {
+        if (isAndroid) {
+          window.location.href = createAndroidIntent(
+            'https://photos.google.com/',
+            'com.google.android.apps.photos'
+          );
+        } else if (isIOS) {
+          window.location.href = 'photos-redirect://';
+        }
+      }
+
+      function openLineApp() {
+        if (isAndroid || isIOS) window.location.href = 'line://nv/chat';
+      }
+
+      function openDriveApp() {
+        if (isAndroid) {
+          window.location.href = createAndroidIntent(
+            'https://drive.google.com/drive/',
+            'com.google.android.apps.docs'
+          );
+        } else if (isIOS) {
+          window.location.href = 'googledrive://';
+        }
+      }
+
+      function openSettingsApp() {
+        if (isAndroid) {
+          window.location.href = 'intent:#Intent;action=android.settings.SETTINGS;end';
+        } else if (isIOS) {
+          window.location.href = 'App-Prefs:';
+        }
+      }
+
       function openApp(name) {
+        if (name === 'command') {
+          openInstalledAppOrWeb(webAppTargets.chatgpt);
+          return;
+        }
+
+        if (name === 'intel') {
+          openInstalledAppOrWeb(webAppTargets.gemini);
+          return;
+        }
+
+        if (name === 'mission') {
+          openCalendarApp();
+          return;
+        }
+
+        if (name === 'assets') {
+          openPhotosApp();
+          return;
+        }
+
+        if (name === 'comms') {
+          openLineApp();
+          return;
+        }
+
+        if (name === 'vault') {
+          openDriveApp();
+          return;
+        }
+
+        if (name === 'monitor') {
+          openInstalledAppOrWeb(webAppTargets.youtube);
+          return;
+        }
+
+        if (name === 'settings') {
+          openSettingsApp();
+          return;
+        }
+
+        if (name === 'mail') {
+          window.location.href = 'mailto:';
+          return;
+        }
+
+        if (name === 'phone') {
+          window.location.href = phoneUrl;
+          return;
+        }
+
         if (name === 'browser') {
           window.open(browserStartUrl, '_blank', 'noopener,noreferrer');
           return;
