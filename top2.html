@@ -554,6 +554,7 @@
       const title = document.getElementById('sheet-title');
       const summary = document.getElementById('sheet-summary');
       const content = document.getElementById('sheet-content');
+      const browserStartUrl = 'https://www.google.com/';
 
       const appData = {
         command: {
@@ -625,6 +626,11 @@
       }
 
       function openApp(name) {
+        if (name === 'browser') {
+          window.open(browserStartUrl, '_blank', 'noopener,noreferrer');
+          return;
+        }
+
         if (name === 'logout') {
           title.textContent = 'ログアウト';
           summary.textContent = 'このセキュアセッションを終了しますか？';
